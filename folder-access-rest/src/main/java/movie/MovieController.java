@@ -242,7 +242,7 @@ public class MovieController{
 
   @CrossOrigin(origins={"${app.crossorigin.intra}"})
   @PostMapping({"/calculateDurationAndThumb"})
-  public void calculateDurationAndThumb()
+  public MoviesResponse calculateDurationAndThumb()
   {
     List<Movie> mov = (List<Movie>)movieRepository.findAll();
     int cont = 0;
@@ -253,6 +253,7 @@ public class MovieController{
         cont++;
       }
     }
+    return new MoviesResponse(0, cont, null, 0);
   }
   
 
