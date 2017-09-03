@@ -6,6 +6,7 @@ Find movie files in folder and stores in database, uses ffmpeg or avconv
 use datos;
 
 create table movies(
+
 	id int not null auto_increment,
 	name varchar(500),
 	directory varchar(500),
@@ -21,4 +22,5 @@ create table movies(
 
 
 CREATE USER data_movies identified by 'data_com_180269';
+
 grant select,update,insert,delete on table movies to data_movies identified by 'data_com_180269';
