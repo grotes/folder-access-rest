@@ -242,7 +242,7 @@ public class MovieController{
     return mov;
   }
   
-  public String executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
+  private String executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
 	  String duration = null;
 	  try{
 	  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) };
