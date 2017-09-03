@@ -25,6 +25,7 @@ public class Movie{
   private String directory;
   private String duration;
   private String size;
+  private String thumb;
   @Column(name="thumb1", length=10000000)
   private String thumb1;
   @Column(name="thumb2", length=10000000)
@@ -113,6 +114,9 @@ public class Movie{
   public Date getFecha() { 
 	  return fecha; 
   }
+  public String getThumb() { 
+	  return thumb; 
+  }
   
 
   public void setId(Integer id){
@@ -154,4 +158,7 @@ public class Movie{
   public void setFecha(Date fecha) { 
 	  this.fecha = fecha; 
   }
+  public void setThumb(String thumb) {
+	    this.thumb = thumb;
+	  }
 }

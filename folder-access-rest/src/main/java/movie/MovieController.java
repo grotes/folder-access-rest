@@ -2,6 +2,7 @@ package movie;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -239,6 +240,68 @@ public class MovieController{
     return mov;
   }
   
+  @CrossOrigin(origins={"${app.crossorigin.intra}"})
+  @PostMapping({"/generateThum2"})
+  public Movie generateThum2(@RequestParam(name="id", required=true) Integer id)
+  {
+    Movie mov = (Movie)movieRepository.findOne(id);
+    if ((mov != null) && 
+      (mov.getThumb() == null)) {
+      try {
+    	File dr = new File(tmpdir.concat(mov.getId().toString()));
+    	if(!dr.exists()){
+    		dr.mkdirs();
+    	}
+        String tmpImg = tmpdir.concat(mov.getId().toString()).concat("/").concat("p.png");
+        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) };
+        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) + "\n");
+        Process p = Runtime.getRuntime().exec(cmd);
+        BufferedReader stdInput = new BufferedReader(
+          new InputStreamReader(p.getInputStream()));
+        BufferedReader stdError = new BufferedReader(
+          new InputStreamReader(p.getErrorStream()));
+        
+
+        String s = null,duration=null;
+        if (mov.getDuration().trim().length() == 0) {
+          if (stdInput.ready()) {
+            while ((s = stdInput.readLine()) != null) {
+              if (s.contains("Duration:")) {
+            	System.out.println(s);
+                s = s.replaceFirst("Duration: ", "");
+                s = s.substring(0, s.indexOf(",")).trim();
+                duration = s.substring(0, s.lastIndexOf("."));
+                duration = duration.startsWith("00:") ? duration.substring(3) : duration;
+                mov.setDuration(duration);
+              }
+            }
+          }
+          
+
+          while ((s = stdError.readLine()) != null) {
+            if (s.contains("Duration:")) {
+              System.out.println(s);
+              s = s.replaceFirst("Duration: ", "");
+              s = s.substring(0, s.indexOf(",")).trim();
+              duration = s.substring(0, s.lastIndexOf("."));
+              duration = duration.startsWith("00:") ? duration.substring(3) : duration;
+              mov.setDuration(duration);
+            }
+          }
+        }
+        
+        mov.setThumb(tmpdir.concat(mov.getId().toString()).concat("/"));
+        
+
+
+        movieRepository.save(mov);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    
+    return mov;
+  }
 
   @CrossOrigin(origins={"${app.crossorigin.intra}"})
   @PostMapping({"/calculateDurationAndThumb"})
@@ -248,8 +311,8 @@ public class MovieController{
     int cont = 0;
     for (int i = 0; (i < mov.size()) && (cont < 10); i++) {
       Movie m = (Movie)mov.get(i);
-      if ((m.getDuration().trim().length() == 0) || (m.getThumb1() == null)) {
-        generateThum(m.getId());
+      if ((m.getDuration().trim().length() == 0) || (m.getThumb() == null)) {
+        generateThum2(m.getId());
         cont++;
       }
     }
