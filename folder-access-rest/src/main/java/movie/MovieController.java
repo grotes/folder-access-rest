@@ -56,6 +56,8 @@ public class MovieController{
   private String tmpdirsave;
   @Value("${app.rows}")
   private Long rows;
+  @Value("${app.maxIterationsThumb}")
+  private Integer maxIterationsThumb;
   
   public MovieController() {}
   
@@ -328,7 +330,7 @@ public class MovieController{
   {
     List<Movie> mov = (List<Movie>)movieRepository.findAll();
     int cont = 0;
-    for (int i = 0; (i < mov.size()) && (cont < 20); i++) {
+    for (int i = 0; (i < mov.size()) && (cont < maxIterationsThumb); i++) {
       Movie m = (Movie)mov.get(i);
       if ((m.getDuration().trim().length() == 0) || (m.getThumb() == null)) {
         generateThum2(m.getId());
