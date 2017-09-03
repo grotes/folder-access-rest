@@ -4,7 +4,6 @@ package movie;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -33,6 +32,8 @@ public class MovieController{
   private String commandFirst2;
   @Value("${command.second}")
   private String commandSecond;
+  @Value("${command.third}")
+  private String commandThird;
   @Value("${command.ls.text}")
   private String commandls;
   @Value("${command.ls.wait}")
@@ -58,8 +59,8 @@ public class MovieController{
     int cont = 0;
     try
     {
-      String[] cmd = { commandFirst, commandFirst2, commandls.replace(";dir;", directory) };
-      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + commandls.replace(";dir;", directory));
+      String[] cmd = { commandFirst, commandFirst2, String.format(commandls,directory) };
+      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandls,directory));
       Process p = Runtime.getRuntime().exec(cmd);
       BufferedReader stdInput = new BufferedReader(
         new InputStreamReader(p.getInputStream()));
@@ -162,9 +163,9 @@ public class MovieController{
     if ((mov != null) && 
       (mov.getThumb1() == null)) {
       try {
-        String tmpImg = tmpdir.concat(String.valueOf(Calendar.getInstance().getTimeInMillis())).concat("p%d.png");
-        String[] cmd = { commandFirst, commandFirst2, commandSecond.concat(" \"").concat(directory.concat(mov.getName())).concat("\" -ss 00:00:40.435 -vframes 1 -filter:v scale=\"340:-1\"").concat(" \"").concat(tmpImg.replace("%d", "1")).concat("\" ") };
-        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + commandSecond.concat(" \"").concat(directory.concat(mov.getName())).concat("\" -ss 00:00:40.435 -vframes 1 -filter:v scale=\"340:-1\"").concat(" \"").concat(tmpImg).concat("\" ") + "\n");
+        String tmpImg = tmpdir.concat(String.valueOf(Calendar.getInstance().getTimeInMillis())).concat("p.png");
+        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) };
+        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) + "\n");
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader stdInput = new BufferedReader(
           new InputStreamReader(p.getInputStream()));
@@ -172,41 +173,44 @@ public class MovieController{
           new InputStreamReader(p.getErrorStream()));
         
 
-        String s = null;
-        String duration = null;
+        String s = null,duration=null;
+        boolean error = false;
         if (mov.getDuration().trim().length() == 0) {
           if (stdInput.ready()) {
             while ((s = stdInput.readLine()) != null) {
-              System.out.println(s);
               if (s.contains("Duration:")) {
+            	System.out.println(s);
                 s = s.replaceFirst("Duration: ", "");
                 s = s.substring(0, s.indexOf(",")).trim();
                 duration = s.substring(0, s.lastIndexOf("."));
                 duration = duration.startsWith("00:") ? duration.substring(3) : duration;
                 mov.setDuration(duration);
+              }else if(s.contains("No such file or directory")){
+              	error=true;
               }
             }
           }
           
 
           while ((s = stdError.readLine()) != null) {
-            System.out.println(s);
             if (s.contains("Duration:")) {
+              System.out.println(s);
               s = s.replaceFirst("Duration: ", "");
               s = s.substring(0, s.indexOf(",")).trim();
               duration = s.substring(0, s.lastIndexOf("."));
               duration = duration.startsWith("00:") ? duration.substring(3) : duration;
               mov.setDuration(duration);
+            }else if(s.contains("No such file or directory")){
+            	error=true;
             }
           }
         }
         String[] th = new String[4];
         for (int h = 1; h < 2; h++) {
-          Path path = Paths.get(tmpImg.replace("%d", String.valueOf(h)), new String[0]);
+          Path path = Paths.get(tmpImg);
           boolean conti = false;
           int i = 0;
-          while ((!Files.exists(path, new LinkOption[0])) && (!conti))
-          {
+          while ((!Files.exists(path)) && (!conti) &&(!error)){
             Thread.sleep(5000);
             i++;
             if (i == 15) {
