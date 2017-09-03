@@ -17,8 +17,8 @@ import java.util.Properties;
 public class RealNamingStrategyImpl extends org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static final String tbName = "app.tablename";
-	private static final String dollar = "$";
+	private static final String dollar = "${";
+	private static final String end = "}";
 	
 	public static final PhysicalNamingStrategyStandardImpl INSTANCE = new PhysicalNamingStrategyStandardImpl();
 
@@ -33,7 +33,7 @@ public class RealNamingStrategyImpl extends org.springframework.boot.orm.jpa.hib
     			// load a properties file
     			prop.load(input);
     			// get the property value and print it out
-    			text = prop.getProperty(tbName);
+    			text = prop.getProperty(name.getText().replace(dollar, "").replace(end, ""));
     		}catch(Exception e){e.printStackTrace();}
     	}
         return new Identifier(text, name.isQuoted());
