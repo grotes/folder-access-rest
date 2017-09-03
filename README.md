@@ -20,6 +20,5 @@ create table movies(
 )ENGINE=innodb;
 
 
-
 CREATE USER data_movies identified by 'data_com_180269';
 grant select,update,insert,delete on table movies to data_movies identified by 'data_com_180269';
