@@ -13,7 +13,7 @@ import java.util.Properties;
  * 
  * @author grotes
  *
- */
+ **************/
 public class RealNamingStrategyImpl extends org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy implements Serializable {
 
 	private static final long serialVersionUID = 1L;

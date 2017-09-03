@@ -8,6 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+
+/****************
+ * 
+ * @author grotes
+ *
+ ***************/
+
 @Transactional(readOnly=true)
 public abstract interface MovieRepository extends CrudRepository<Movie, Integer>{
 	

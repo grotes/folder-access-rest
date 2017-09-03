@@ -2,6 +2,12 @@ package movie;
 
 import java.util.List;
 
+/*******************
+ * 
+ * @author grotes
+ *
+ ******************/
+
 public class MoviesResponse
 {
   private final long size;
