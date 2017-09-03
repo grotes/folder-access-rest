@@ -174,8 +174,8 @@ public class MovieController{
       (mov.getThumb() == null)) {
       try {
         String tmpImg = tmpdir.concat(String.valueOf(Calendar.getInstance().getTimeInMillis())).concat("p.png");
-        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"0",tmpImg)) };
-        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"0",tmpImg)) + "\n");
+        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"00",tmpImg)) };
+        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"00",tmpImg)) + "\n");
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader stdInput = new BufferedReader(
           new InputStreamReader(p.getInputStream()));
