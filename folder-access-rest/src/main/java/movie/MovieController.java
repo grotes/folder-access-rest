@@ -52,6 +52,8 @@ public class MovieController{
   private String saveDirectory;
   @Value("${tmpdir}")
   private String tmpdir;
+  @Value("${tmpdirsave}")
+  private String tmpdirsave;
   @Value("${app.rows}")
   private Long rows;
   
@@ -280,6 +282,7 @@ public class MovieController{
     		dr.mkdirs();
     	}
         String tmpRutaImg = tmpdir.concat(mov.getId().toString()).concat("/");
+        String rutaSaveImg = tmpdirsave.concat(mov.getId().toString()).concat("/");
         String tmpImg = tmpRutaImg.concat("0.png");
         Integer min=new Integer(0);
         String mins="00";
@@ -294,22 +297,22 @@ public class MovieController{
         Integer inc = min/4;
         //Capture minute 2 second 40
         min=inc.intValue();
-        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("1.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
         //Capture minute 4 second 40
         min=min+inc;
-        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("2.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
         //Capture minute 6 second 40
         min=min+inc;
-        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("3.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
 
         mov.setDuration(duration);
-        mov.setThumb(tmpRutaImg);
+        mov.setThumb(rutaSaveImg);
         movieRepository.save(mov);
       } catch (Exception e) {
         e.printStackTrace();
@@ -325,7 +328,7 @@ public class MovieController{
   {
     List<Movie> mov = (List<Movie>)movieRepository.findAll();
     int cont = 0;
-    for (int i = 0; (i < mov.size()) && (cont < 1); i++) {
+    for (int i = 0; (i < mov.size()) && (cont < 20); i++) {
       Movie m = (Movie)mov.get(i);
       if ((m.getDuration().trim().length() == 0) || (m.getThumb() == null)) {
         generateThum2(m.getId());
