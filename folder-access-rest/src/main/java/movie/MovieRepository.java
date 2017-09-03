@@ -22,13 +22,13 @@ public abstract interface MovieRepository extends CrudRepository<Movie, Integer>
   
 	public abstract List<Movie> findByName(String paramString);
   
-	@Query("select new movie.Movie(m.id, m.duration, m.name, m.directory, m.size, m.thumb1) from Movie m order by m.fecha desc")
+	@Query("select new movie.Movie(m.id, m.duration, m.name, m.directory, m.size, m.thumb) from Movie m order by m.fecha desc")
 	public abstract List<Movie> findNews(Pageable paramPageable);
   
 	@Query("select count(m.id) from Movie m where lower(m.name) like lower(concat('%', ?1,'%'))")
 	public abstract Integer countByNameContainingIgnoreCase(String paramString);
   
-	@Query("select new movie.Movie(m.id, m.duration, m.name, m.directory, m.size) from Movie m order by m.name")
+	@Query("select new movie.Movie(m.id, m.duration, m.name, m.directory, m.size, m.thumb) from Movie m order by m.name")
 	public abstract List<Movie> findMoviesForListing();
   
 	@Transactional

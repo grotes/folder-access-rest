@@ -167,11 +167,11 @@ public class MovieController{
   {
     Movie mov = (Movie)movieRepository.findOne(id);
     if ((mov != null) && 
-      (mov.getThumb1() == null)) {
+      (mov.getThumb() == null)) {
       try {
         String tmpImg = tmpdir.concat(String.valueOf(Calendar.getInstance().getTimeInMillis())).concat("p.png");
-        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) };
-        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) + "\n");
+        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"0",tmpImg)) };
+        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"0",tmpImg)) + "\n");
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader stdInput = new BufferedReader(
           new InputStreamReader(p.getInputStream()));
@@ -227,7 +227,7 @@ public class MovieController{
           th[(h - 1)] = Base64.encodeBase64String(binaryData);
           Files.delete(path);
         }
-        mov.setThumb1(th[0]);
+        mov.setThumb(th[0]);
         
 
 
@@ -239,6 +239,33 @@ public class MovieController{
     
     return mov;
   }
+  
+  public String executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
+	  String duration = null;
+	  try{
+	  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) };
+      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) + "\n");
+      Process p = Runtime.getRuntime().exec(cmd);
+
+      BufferedReader stdError = new BufferedReader(
+        new InputStreamReader(p.getErrorStream()));
+      String s = null;
+      
+      while ((s = stdError.readLine()) != null) {
+          if (s.contains("Duration:")) {
+            System.out.println(s);
+            if(returnDuration){
+	            s = s.replaceFirst("Duration: ", "");
+	            s = s.substring(0, s.indexOf(",")).trim();
+	            duration = s.substring(0, s.lastIndexOf("."));
+	            duration = duration.startsWith("00:") ? duration.substring(3) : duration;
+            }
+          }
+        }
+	  }catch(Exception e){e.printStackTrace();}
+	  return duration;
+  }
+  
   
   @CrossOrigin(origins={"${app.crossorigin.intra}"})
   @PostMapping({"/generateThum2"})
@@ -252,48 +279,37 @@ public class MovieController{
     	if(!dr.exists()){
     		dr.mkdirs();
     	}
-        String tmpImg = tmpdir.concat(mov.getId().toString()).concat("/").concat("p.png");
-        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) };
-        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,tmpImg)) + "\n");
-        Process p = Runtime.getRuntime().exec(cmd);
-        BufferedReader stdInput = new BufferedReader(
-          new InputStreamReader(p.getInputStream()));
-        BufferedReader stdError = new BufferedReader(
-          new InputStreamReader(p.getErrorStream()));
-        
-
-        String s = null,duration=null;
-        if (mov.getDuration().trim().length() == 0) {
-          if (stdInput.ready()) {
-            while ((s = stdInput.readLine()) != null) {
-              if (s.contains("Duration:")) {
-            	System.out.println(s);
-                s = s.replaceFirst("Duration: ", "");
-                s = s.substring(0, s.indexOf(",")).trim();
-                duration = s.substring(0, s.lastIndexOf("."));
-                duration = duration.startsWith("00:") ? duration.substring(3) : duration;
-                mov.setDuration(duration);
-              }
-            }
-          }
-          
-
-          while ((s = stdError.readLine()) != null) {
-            if (s.contains("Duration:")) {
-              System.out.println(s);
-              s = s.replaceFirst("Duration: ", "");
-              s = s.substring(0, s.indexOf(",")).trim();
-              duration = s.substring(0, s.lastIndexOf("."));
-              duration = duration.startsWith("00:") ? duration.substring(3) : duration;
-              mov.setDuration(duration);
-            }
-          }
+        String tmpRutaImg = tmpdir.concat(mov.getId().toString()).concat("/");
+        String tmpImg = tmpRutaImg.concat("0.png");
+        Integer min=new Integer(0);
+        String mins="00";
+        //Capture second 40
+        String duration = executeCommandThumb(mov.getName(), mins, tmpImg, true);
+        String[] d = duration.split(":");
+        if(d.length==2){
+        	min=Integer.parseInt(d[0]);
+        }else if(d.length==3){
+        	min=Integer.parseInt(d[1]);
         }
-        
-        mov.setThumb(tmpdir.concat(mov.getId().toString()).concat("/"));
-        
+        Integer inc = min/4;
+        //Capture minute 2 second 40
+        min=inc.intValue();
+        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        tmpImg = tmpRutaImg.concat("1.png");
+        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+        //Capture minute 4 second 40
+        min=min+inc;
+        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        tmpImg = tmpRutaImg.concat("2.png");
+        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+        //Capture minute 6 second 40
+        min=min+inc;
+        mins=min.toString().length()==1 ? "0".concat(mins.toString()) : mins.toString();
+        tmpImg = tmpRutaImg.concat("3.png");
+        executeCommandThumb(mov.getName(), mins, tmpImg, false);
 
-
+        mov.setDuration(duration);
+        mov.setThumb(tmpRutaImg);
         movieRepository.save(mov);
       } catch (Exception e) {
         e.printStackTrace();
@@ -309,7 +325,7 @@ public class MovieController{
   {
     List<Movie> mov = (List<Movie>)movieRepository.findAll();
     int cont = 0;
-    for (int i = 0; (i < mov.size()) && (cont < 10); i++) {
+    for (int i = 0; (i < mov.size()) && (cont < 1); i++) {
       Movie m = (Movie)mov.get(i);
       if ((m.getDuration().trim().length() == 0) || (m.getThumb() == null)) {
         generateThum2(m.getId());

@@ -1,7 +1,6 @@
 package movie;
 
 import java.util.Date;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,33 +25,19 @@ public class Movie{
   private String duration;
   private String size;
   private String thumb;
-  @Column(name="thumb1", length=10000000)
-  private String thumb1;
-  @Column(name="thumb2", length=10000000)
-  private String thumb2;
-  @Column(name="thumb3", length=10000000)
-  private String thumb3;
-  @Column(name="thumb4", length=10000000)
-  private String thumb4;
   private Date fecha;
   
-  public Movie(Integer id, String duration, String name, String directory, String size, String thumb1)
+  
+  public Movie(Integer id, String duration, String name, String directory, String size, String thumb)
   {
     this.id = id;
     this.duration = duration;
     this.name = name;
     this.directory = directory;
     this.size = size;
-    this.thumb1 = thumb1;
+    this.thumb = thumb;
   }
   
-  public Movie(String duration, String name, String directory, String size, String thumb1) { 
-	this.duration = duration;
-    this.name = name;
-    this.directory = directory;
-    this.size = size;
-    this.thumb1 = thumb1;
-  }
   
   public Movie(int id, String duration, String name, String directory, String size) { 
 	this.id = Integer.valueOf(id);
@@ -75,6 +60,8 @@ public class Movie{
   
   public Movie() {}
   
+  
+  
   public String getDuration(){
     return duration;
   }
@@ -95,28 +82,14 @@ public class Movie{
     return id;
   }
   
-  public String getThumb1() {
-	  return thumb1;
-  }
-  
-  public String getThumb2() {
-    return thumb2;
-  }
-  
-  public String getThumb3() { 
-	  return thumb3;
-  }
-  
-  public String getThumb4() {
-    return thumb4;
-  }
-  
   public Date getFecha() { 
 	  return fecha; 
   }
   public String getThumb() { 
 	  return thumb; 
   }
+  
+  
   
 
   public void setId(Integer id){
@@ -139,26 +112,11 @@ public class Movie{
     this.size = size;
   }
   
-  public void setThumb1(String thumb1) { 
-	  this.thumb1 = thumb1; 
-  }
-  
-  public void setThumb2(String thumb2) {
-    this.thumb2 = thumb2;
-  }
-  
-  public void setThumb3(String thumb3) { 
-	  this.thumb3 = thumb3; 
-  }
-  
-  public void setThumb4(String thumb4) {
-    this.thumb4 = thumb4;
-  }
-  
   public void setFecha(Date fecha) { 
 	  this.fecha = fecha; 
   }
   public void setThumb(String thumb) {
 	    this.thumb = thumb;
-	  }
+  }
+  
 }
