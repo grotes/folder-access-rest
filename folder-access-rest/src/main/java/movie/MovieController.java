@@ -294,7 +294,7 @@ public class MovieController{
         if(d.length==2){
         	min=Integer.parseInt(d[0]);
         }else if(d.length==3){
-        	min=Integer.parseInt(d[1]);
+        	min=new Integer(60);
         }
         Integer inc = min/4;
         //Capture minute 2 second 40
