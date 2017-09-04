@@ -291,23 +291,24 @@ public class MovieController{
         //Capture second 40
         String duration = executeCommandThumb(mov.getName(), mins, tmpImg, true);
         String[] d = duration.split(":");
+        //get minutes, if longer than 1h get 60 minutes
         if(d.length==2){
         	min=Integer.parseInt(d[0]);
         }else if(d.length==3){
         	min=new Integer(60);
         }
         Integer inc = min/4;
-        //Capture minute 2 second 40
+        //Capture minute 1/4 of minutes
         min=inc.intValue();
         mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("1.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
-        //Capture minute 4 second 40
+        //Capture minute 2/4 of minutes
         min=min+inc;
         mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("2.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
-        //Capture minute 6 second 40
+        //Capture minute 3/4 of minutes
         min=min+inc;
         mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("3.png");
