@@ -13,10 +13,7 @@ create table movies(
 	directory varchar(500),
 	duration varchar(200),
 	size varchar(20),
-	thumb1 mediumblob,
-	thumb2 mediumblob,
-	thumb3 mediumblob,
-	thumb4 mediumblob,
+	thumb varchar(200),
 	fecha timestamp default current_timestamp,
 	constraint pk_movies primary key (id)	
 )ENGINE=innodb;
