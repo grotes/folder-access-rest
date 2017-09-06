@@ -4,13 +4,8 @@ package movie;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -58,6 +53,8 @@ public class MovieController{
   private Long rows;
   @Value("${app.maxIterationsThumb}")
   private Integer maxIterationsThumb;
+  @Value("${app.toMegas}")
+  private Integer toMegas;
   
   public MovieController() {}
   
@@ -99,7 +96,7 @@ public class MovieController{
                   searching = false;
                 }
               } else {
-                size = String.valueOf(Long.parseLong(m[0]) / 1024 / 1024).concat("MB");
+                size = String.valueOf(Long.parseLong(m[0]) / toMegas).concat("MB");
               }
               if (searching){
                 ret.add(new Movie(duration, m[1], saveDirectory, size));
@@ -164,85 +161,6 @@ public class MovieController{
     return ret;
   }
   
-
-  @CrossOrigin(origins={"${app.crossorigin.intra}"})
-  @PostMapping({"/generateThum"})
-  public Movie generateThum(@RequestParam(name="id", required=true) Integer id)
-  {
-    Movie mov = (Movie)movieRepository.findOne(id);
-    if ((mov != null) && 
-      (mov.getThumb() == null)) {
-      try {
-        String tmpImg = tmpdir.concat(String.valueOf(Calendar.getInstance().getTimeInMillis())).concat("p.png");
-        String[] cmd = { commandFirst, commandFirst2, String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"00",tmpImg)) };
-        System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(mov.getName())).concat(String.format(commandThird,"00",tmpImg)) + "\n");
-        Process p = Runtime.getRuntime().exec(cmd);
-        BufferedReader stdInput = new BufferedReader(
-          new InputStreamReader(p.getInputStream()));
-        BufferedReader stdError = new BufferedReader(
-          new InputStreamReader(p.getErrorStream()));
-        
-
-        String s = null,duration=null;
-        boolean error = false;
-        if (mov.getDuration().trim().length() == 0) {
-          if (stdInput.ready()) {
-            while ((s = stdInput.readLine()) != null) {
-              if (s.contains("Duration:")) {
-            	System.out.println(s);
-                s = s.replaceFirst("Duration: ", "");
-                s = s.substring(0, s.indexOf(",")).trim();
-                duration = s.substring(0, s.lastIndexOf("."));
-                duration = duration.startsWith("00:") ? duration.substring(3) : duration;
-                mov.setDuration(duration);
-              }else if(s.contains("No such file or directory")){
-              	error=true;
-              }
-            }
-          }
-          
-
-          while ((s = stdError.readLine()) != null) {
-            if (s.contains("Duration:")) {
-              System.out.println(s);
-              s = s.replaceFirst("Duration: ", "");
-              s = s.substring(0, s.indexOf(",")).trim();
-              duration = s.substring(0, s.lastIndexOf("."));
-              duration = duration.startsWith("00:") ? duration.substring(3) : duration;
-              mov.setDuration(duration);
-            }else if(s.contains("No such file or directory")){
-            	error=true;
-            }
-          }
-        }
-        String[] th = new String[4];
-        for (int h = 1; h < 2; h++) {
-          Path path = Paths.get(tmpImg);
-          boolean conti = false;
-          int i = 0;
-          while ((!Files.exists(path)) && (!conti) &&(!error)){
-            Thread.sleep(5000);
-            i++;
-            if (i == 15) {
-              conti = true;
-            }
-          }
-          byte[] binaryData = Files.readAllBytes(path);
-          th[(h - 1)] = Base64.encodeBase64String(binaryData);
-          Files.delete(path);
-        }
-        mov.setThumb(th[0]);
-        
-
-
-        movieRepository.save(mov);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-    
-    return mov;
-  }
   
   private String executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
 	  String duration = null;
@@ -272,8 +190,8 @@ public class MovieController{
   
   
   @CrossOrigin(origins={"${app.crossorigin.intra}"})
-  @PostMapping({"/generateThum2"})
-  public Movie generateThum2(@RequestParam(name="id", required=true) Integer id)
+  @PostMapping({"/generateThum"})
+  public Movie generateThum(@RequestParam(name="id", required=true) Integer id)
   {
     Movie mov = (Movie)movieRepository.findOne(id);
     if ((mov != null) && 
@@ -313,7 +231,6 @@ public class MovieController{
         mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
         tmpImg = tmpRutaImg.concat("3.png");
         executeCommandThumb(mov.getName(), mins, tmpImg, false);
-
         mov.setDuration(duration);
         mov.setThumb(rutaSaveImg);
         movieRepository.save(mov);
@@ -334,7 +251,7 @@ public class MovieController{
     for (int i = 0; (i < mov.size()) && (cont < maxIterationsThumb); i++) {
       Movie m = (Movie)mov.get(i);
       if ((m.getDuration().trim().length() == 0) || (m.getThumb() == null)) {
-        generateThum2(m.getId());
+        generateThum(m.getId());
         cont++;
       }
     }
