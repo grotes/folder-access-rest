@@ -19,6 +19,25 @@ create table movies(
 )ENGINE=innodb;
 
 
-CREATE USER data_movies identified by 'data_com_180269';
+create table data_movies_tags(
+	cod int not null auto_increment,
+	tag varchar(200) unique,
+	fecha timestamp default current_timestamp on update current_timestamp,
+	constraint pk_movies_tags primary key (cod)
+)ENGINE=innodb;
 
+create table rel_movies_tags(
+	codTag int not null,
+	codMovie int not null,
+	fecha timestamp default current_timestamp on update current_timestamp,
+	constraint pk_movies_tags_rel primary key (codTag,codMovie),
+	CONSTRAINT fk_movies_tags_rel FOREIGN KEY(codMovie) references movies(id) on delete cascade on update cascade,
+	CONSTRAINT fk_tags_movies_rel FOREIGN KEY(codTag) references data_movies_tags(cod) on delete cascade on update cascade
+)ENGINE=innodb;
+
+
+
+CREATE USER data_movies identified by 'data_com_180269';
 grant select,update,insert,delete on table movies to data_movies identified by 'data_com_180269';
+grant select,update,insert,delete on table data_movies_tags to data_movies identified by 'data_com_180269';
+grant select,update,insert,delete on table rel_movies_tags to data_movies identified by 'data_com_180269';
