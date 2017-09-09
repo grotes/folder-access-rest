@@ -3,7 +3,7 @@ package movie.beans;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -21,7 +21,7 @@ public class RelTag implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@EmbeddedId
+	@Id
 	private RelTagPrimaryKey primaryKey;
 	private Date fecha;
 	
