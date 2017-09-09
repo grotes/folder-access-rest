@@ -20,6 +20,7 @@ create table movies(
 
 
 create table data_movies_tags(
+
 	cod int not null auto_increment,
 	tag varchar(200) unique,
 	fecha timestamp default current_timestamp on update current_timestamp,
@@ -27,6 +28,7 @@ create table data_movies_tags(
 )ENGINE=innodb;
 
 create table rel_movies_tags(
+
 	codTag int not null,
 	codMovie int not null,
 	fecha timestamp default current_timestamp on update current_timestamp,
