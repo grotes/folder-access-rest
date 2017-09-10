@@ -29,8 +29,8 @@ create table data_movies_tags(
 
 create table rel_movies_tags(
 
-	codTag int not null,
-	codMovie int not null,
+	cod_tag int not null,
+	cod_movie int not null,
 	fecha timestamp default current_timestamp on update current_timestamp,
 	constraint pk_movies_tags_rel primary key (codTag,codMovie),
 	CONSTRAINT fk_movies_tags_rel FOREIGN KEY(codMovie) references movies(id) on delete cascade on update cascade,
