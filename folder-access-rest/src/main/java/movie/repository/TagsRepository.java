@@ -16,5 +16,5 @@ import movie.beans.Tag;
 @Transactional(readOnly=true)
 public abstract interface TagsRepository extends CrudRepository<Tag, Integer>{
 	
-	  
+	public abstract Tag findByTag(String paramString);
 }

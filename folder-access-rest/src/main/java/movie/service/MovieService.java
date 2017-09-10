@@ -60,7 +60,7 @@ public class MovieService {
 
 	public MoviesResponse addAllMoviesFromFolder() {
 	    List<String> mov = new ArrayList<String>();
-	    List<Tag> tags = new ArrayList<Tag>();
+	    List<Tag> tags = null;
 	    List<RelTag> relTags = new ArrayList<RelTag>();
 	    List<Movie> ret = new ArrayList<Movie>();
 	    int cont = 0;
@@ -99,11 +99,16 @@ public class MovieService {
 	              }
 	              if (searching){
 	                ret.add(new Movie(duration, m[1], saveDirectory, size));
-	                String[] tagsFormatted = m[1].substring(0, m[1].lastIndexOf(".")).replaceAll("-", " ").replaceAll("_", " ").replaceAll(".", " ").split(" ");
+	                String[] tagsFormatted = m[1].substring(0, m[1].lastIndexOf(".")).replaceAll("-", " ").replaceAll("_", " ").
+	                		replaceAll("\\.", " ").replaceAll("\\(", " ").replaceAll("\\)", " ").replaceAll("\\[", " ").
+	                		replaceAll("\\]", " ").split(" ");
 	                for(int i=0;i<tagsFormatted.length;i++){
-	                	tags.add(new Tag(tagsFormatted[i]));
-	                	relTags.add(new RelTag(tags.get(tags.size()-1).getCod(),ret.get(ret.size()-1).getId()));
-	                	System.out.println((tags.size()-1)+" - "+(ret.size()-1)+"\n");
+	                	tags = new ArrayList<Tag>();
+	                	Tag t = tagsRepository.findByTag(tagsFormatted[i]);
+	                	if(t==null){t=new Tag(tagsFormatted[i]);}
+                		tags.add(t);
+                		tags = (List<Tag>) tagsRepository.save(tags);
+                		relTags.add(new RelTag(tags.get(tags.size()-1).getCod(),ret.size()-1));
 	                }
 	              }
 	            }
@@ -111,22 +116,21 @@ public class MovieService {
 	          searching = true;
 	        }
 	      }
+	    //movieRepository.deleteByNameNotIn(mov);
+		    ret = (List<Movie>) movieRepository.save(ret);
+		    System.out.println("Procesados:\n");
+		    for(int i=0;i<relTags.size();i++){
+	        	RelTag r = relTags.get(i);
+	        	r.setCodMovie(ret.get(r.getCodMovie()).getId());
+	        	System.out.println(r.getCodMovie()+" - "+r.getCodTag()+"\n");
+	        	relTags.set(i, r);
+	        }
+		    relTagsRepository.save(relTags);
 	    }catch (Exception e) {
 	      e.printStackTrace();
 	    }
 	    
-	    movieRepository.deleteByNameNotIn(mov);
-	    ret = (List<Movie>) movieRepository.save(ret);
-	    tags = (List<Tag>) tagsRepository.save(tags);
-	    System.out.println("Procesados:\n");
-	    for(int i=0;i<relTags.size();i++){
-        	RelTag r = relTags.get(i);
-        	r.setCodMovie(ret.get(r.getCodMovie()).getId());
-        	r.setCodTag(tags.get(r.getCodTag()).getCod());
-        	System.out.println(r.getCodMovie()+" - "+r.getCodTag()+"\n");
-        	relTags.set(i, r);
-        }
-	    relTagsRepository.save(relTags);
+	    
 	    
 	    return new MoviesResponse(ret.size(), cont, ret, 0);
 	  }

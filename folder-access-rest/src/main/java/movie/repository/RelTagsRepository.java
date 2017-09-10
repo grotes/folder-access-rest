@@ -16,5 +16,4 @@ import movie.beans.RelTag;
 @Transactional(readOnly=true)
 public abstract interface RelTagsRepository extends CrudRepository<RelTag, Integer>{
 	
-	  
 }
