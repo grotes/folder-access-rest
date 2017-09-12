@@ -1,6 +1,5 @@
 package movie.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,6 +77,12 @@ public class MovieController{
   public Movie getMovie(@RequestParam(name="id", required=true) Integer id)
   {
     return movieService.getMovie(id);
+  }
+  
+  @CrossOrigin(origins={"${app.crossorigin.all}"})
+  @PostMapping({"/findMoviesByTags"})
+  public MoviesResponse findMoviesByTags(@RequestParam(name="tag", required=true) String tag, @RequestParam(name="page", required=false) Long page, @RequestParam(name="limit", required=false) Long limit){
+	  return movieService.findMoviesByTags(tag,page,limit);
   }
   
 }

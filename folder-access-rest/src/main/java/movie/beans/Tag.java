@@ -1,6 +1,7 @@
 package movie.beans;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -31,6 +32,7 @@ public class Tag implements Serializable{
 	
 	public Tag(String tag){
 		this.tag = tag;
+		fecha = Calendar.getInstance().getTime();
 	}
 	
 	public Tag(){ }

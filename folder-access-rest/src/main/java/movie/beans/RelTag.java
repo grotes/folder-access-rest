@@ -1,12 +1,14 @@
 package movie.beans;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
 
 /***********
  * 
@@ -31,6 +33,7 @@ public class RelTag implements Serializable{
 	public RelTag(Integer codTag, Integer codMovie){
 		this.codMovie = codMovie;
     	this.codTag = codTag;
+    	fecha = Calendar.getInstance().getTime();
 	}
 	
 	public RelTag(){ }

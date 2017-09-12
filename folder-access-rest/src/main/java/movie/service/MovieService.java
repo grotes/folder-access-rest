@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,20 +117,18 @@ public class MovieService {
 	          searching = true;
 	        }
 	      }
-	    //movieRepository.deleteByNameNotIn(mov);
-		    ret = (List<Movie>) movieRepository.save(ret);
-		    System.out.println("Procesados:\n");
-		    for(int i=0;i<relTags.size();i++){
-	        	RelTag r = relTags.get(i);
-	        	r.setCodMovie(ret.get(r.getCodMovie()).getId());
-	        	System.out.println(r.getCodMovie()+" - "+r.getCodTag()+"\n");
-	        	relTags.set(i, r);
-	        }
-		    relTagsRepository.save(relTags);
+	    
 	    }catch (Exception e) {
 	      e.printStackTrace();
 	    }
-	    
+	  //movieRepository.deleteByNameNotIn(mov);
+	    ret = (List<Movie>) movieRepository.save(ret);
+	    for(int i=0;i<relTags.size();i++){
+        	RelTag r = relTags.get(i);
+        	r.setCodMovie(ret.get(r.getCodMovie()).getId());
+        	relTags.set(i, r);
+        }
+	    relTagsRepository.save(relTags);
 	    
 	    
 	    return new MoviesResponse(ret.size(), cont, ret, 0);
@@ -210,6 +209,7 @@ public class MovieService {
 	        Integer min=new Integer(0);
 	        String mins="00";
 	        //Capture second 40
+	        System.out.println("Comienzo: "+Calendar.getInstance().getTime());
 	        String duration = executeCommandThumb(mov.getName(), mins, tmpImg, true);
 	        String[] d = duration.split(":");
 	        //get minutes, if longer than 1h get 60 minutes
@@ -223,17 +223,21 @@ public class MovieService {
 	        min=inc.intValue();
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("1.png");
+	        System.out.println("Antes de 1: "+Calendar.getInstance().getTime());
 	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 2/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("2.png");
+	        System.out.println("Antes de 2: "+Calendar.getInstance().getTime());
 	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 3/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
+	        System.out.println("Antes de 3: "+Calendar.getInstance().getTime());
 	        tmpImg = tmpRutaImg.concat("3.png");
 	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        System.out.println("Fin: "+Calendar.getInstance().getTime());
 	        mov.setDuration(duration);
 	        mov.setThumb(rutaSaveImg);
 	        movieRepository.save(mov);
@@ -301,4 +305,17 @@ public class MovieService {
 	    }
 	    return mov;
 	  }
+	
+	public MoviesResponse findMoviesByTags(String name, Long page, Long limit){
+		int p = 0;int l = rows.intValue();
+	    if (page != null) p = page.intValue();
+	    if ((limit != null) && 
+	      (limit.longValue() <= rows.longValue())) { l = limit.intValue();
+	    }
+	    p=p*l;
+		List<Movie> movies = movieRepository.findByTagIn(name.replaceAll(" ", "\\|"),p,l);
+		List<Integer> totalResults = movieRepository.countByTagIn(name.replaceAll(" ", "\\|"));
+		int tot = (totalResults==null) ? 0 : totalResults.size();
+		return new MoviesResponse(movies.size(), tot, movies, l);
+	}
 }
