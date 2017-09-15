@@ -126,8 +126,15 @@ public class MovieService {
 	    for(int i=0;i<relTags.size();i++){
         	RelTag r = relTags.get(i);
         	r.setCodMovie(ret.get(r.getCodMovie()).getId());
-        	List<RelTag> lr = relTagsRepository.findByCodTagAndCodMovie(r.getCodTag(), r.getCodMovie());
-        	if(lr != null && (lr.size()>0)){
+        	//List<RelTag> lr = relTagsRepository.findByCodTagAndCodMovie(r.getCodTag(), r.getCodMovie());
+        	RelTag lr = null;
+        	for(int h=0;h<relTags.size();h++){
+        		if(h!=i && (relTags.get(i).getCodMovie() == relTags.get(h).getCodMovie() && relTags.get(i).getCodTag() == relTags.get(h).getCodTag())){
+        			lr = relTags.get(h);
+        			h=relTags.size();
+        		}
+        	}
+        	if(lr != null){
         		relTags.remove(i);
         		i--;
         	}else{
