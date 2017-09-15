@@ -21,4 +21,6 @@ public abstract interface RelTagsRepository extends CrudRepository<RelTag, Integ
 	
 	public abstract List<RelTag> findByCodTagIn(Collection<Integer> paramInteger);
 	
+	public abstract List<RelTag> findByCodTagAndCodMovie(Integer codTag, Integer codMovie);
+	
 }
