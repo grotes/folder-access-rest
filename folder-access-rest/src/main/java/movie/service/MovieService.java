@@ -213,23 +213,21 @@ public class MovieService {
 	        min=inc.intValue();
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("1.png");
-	        System.out.println("Antes de 1: "+Calendar.getInstance().getTime());
 	        CompletableFuture<String> duration2 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 2/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("2.png");
-	        System.out.println("Antes de 2: "+Calendar.getInstance().getTime());
 	        CompletableFuture<String> duration3 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 3/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
-	        System.out.println("Antes de 3: "+Calendar.getInstance().getTime());
 	        tmpImg = tmpRutaImg.concat("3.png");
 	        CompletableFuture<String> duration4 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
-	        System.out.println("Fin: "+Calendar.getInstance().getTime());
+	        
 	        //Wait until they are all done
 	        CompletableFuture.allOf(duration1,duration2,duration3,duration4).join();
+	        System.out.println("Fin: "+Calendar.getInstance().getTime());
 	        mov.setDuration(duration1.get());
 	        mov.setThumb(rutaSaveImg);
 	        movieRepository.save(mov);

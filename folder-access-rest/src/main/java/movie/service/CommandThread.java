@@ -32,9 +32,8 @@ public class CommandThread {
 	public CompletableFuture<String> executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
 		  String duration = null;
 		  try{
-			logger.info("Looking up " + movName);
 		  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) };
-	      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) + "\n");
+		  logger.info("\nCOMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) + "\n");
 	      Process p = Runtime.getRuntime().exec(cmd);
 
 	      BufferedReader stdError = new BufferedReader(
