@@ -199,6 +199,7 @@ public class MovieService {
 	        Integer min=new Integer(0);
 	        String mins="00";
 	        //Capture second 40
+	        long start = System.currentTimeMillis();
 	        System.out.println("Comienzo: "+Calendar.getInstance().getTime());
 	        CompletableFuture<String> duration1 = command.executeCommandThumb(mov.getName(), mins, tmpImg, true);
 	        String[] d = duration1.get().split(":");
@@ -227,7 +228,8 @@ public class MovieService {
 	        
 	        //Wait until they are all done
 	        CompletableFuture.allOf(duration1,duration2,duration3,duration4).join();
-	        System.out.println("Fin: "+Calendar.getInstance().getTime());
+	        start = System.currentTimeMillis() - start;
+	        System.out.println("Fin: "+Calendar.getInstance().getTime()+"\nTiempo: "+((float)(start/1000)/60)+" minutos");
 	        mov.setDuration(duration1.get());
 	        mov.setThumb(rutaSaveImg);
 	        movieRepository.save(mov);
