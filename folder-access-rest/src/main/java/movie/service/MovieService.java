@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,8 @@ import movie.repository.TagsRepository;
 public class MovieService {
 	@Autowired
 	private MovieRepository movieRepository;
+	@Autowired
+	private CommandThread command;
 	@Autowired
 	private TagsRepository tagsRepository;
 	@Autowired
@@ -58,6 +62,7 @@ public class MovieService {
 	private Integer maxIterationsThumb;
 	@Value("${app.toMegas}")
 	private Integer toMegas;
+	
 
 	public MoviesResponse addAllMoviesFromFolder() {
 	    List<String> mov = new ArrayList<String>();
@@ -178,32 +183,6 @@ public class MovieService {
 	    return ret;
 	  }
 	
-	private String executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
-		  String duration = null;
-		  try{
-		  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) };
-	      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,directory.concat(movName)).concat(String.format(commandThird,min,tmpImg)) + "\n");
-	      Process p = Runtime.getRuntime().exec(cmd);
-
-	      BufferedReader stdError = new BufferedReader(
-	        new InputStreamReader(p.getErrorStream()));
-	      String s = null;
-	      
-	      while ((s = stdError.readLine()) != null) {
-	          if (s.contains("Duration:")) {
-	            System.out.println(s);
-	            if(returnDuration){
-		            s = s.replaceFirst("Duration: ", "");
-		            s = s.substring(0, s.indexOf(",")).trim();
-		            duration = s.substring(0, s.lastIndexOf("."));
-		            duration = duration.startsWith("00:") ? duration.substring(3) : duration;
-	            }
-	          }
-	        }
-		  }catch(Exception e){e.printStackTrace();}
-		  return duration;
-	  }
-	
 	public Movie generateThum(Integer id)
 	  {
 	    Movie mov = (Movie)movieRepository.findOne(id);
@@ -221,8 +200,8 @@ public class MovieService {
 	        String mins="00";
 	        //Capture second 40
 	        System.out.println("Comienzo: "+Calendar.getInstance().getTime());
-	        String duration = executeCommandThumb(mov.getName(), mins, tmpImg, true);
-	        String[] d = duration.split(":");
+	        CompletableFuture<String> duration1 = command.executeCommandThumb(mov.getName(), mins, tmpImg, true);
+	        String[] d = duration1.get().split(":");
 	        //get minutes, if longer than 1h get 60 minutes
 	        if(d.length==2){
 	        	min=Integer.parseInt(d[0]);
@@ -235,21 +214,23 @@ public class MovieService {
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("1.png");
 	        System.out.println("Antes de 1: "+Calendar.getInstance().getTime());
-	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration2 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 2/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("2.png");
 	        System.out.println("Antes de 2: "+Calendar.getInstance().getTime());
-	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration3 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        //Capture minute 3/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        System.out.println("Antes de 3: "+Calendar.getInstance().getTime());
 	        tmpImg = tmpRutaImg.concat("3.png");
-	        executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration4 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
 	        System.out.println("Fin: "+Calendar.getInstance().getTime());
-	        mov.setDuration(duration);
+	        //Wait until they are all done
+	        CompletableFuture.allOf(duration1,duration2,duration3,duration4).join();
+	        mov.setDuration(duration1.get());
 	        mov.setThumb(rutaSaveImg);
 	        movieRepository.save(mov);
 	      } catch (Exception e) {
@@ -323,9 +304,17 @@ public class MovieService {
 	    if ((limit != null) && 
 	      (limit.longValue() <= rows.longValue())) { l = limit.intValue();
 	    }
-	    p=p*l;
-		List<Movie> movies = movieRepository.findByTagIn(name.replaceAll(" ", "\\|"),p,l);
-		List<Integer> totalResults = movieRepository.countByTagIn(name.replaceAll(" ", "\\|"));
+	    List<Integer> totalResults;
+	    List<Movie> movies;
+	    if(name.trim().length()==0){
+	    	Pageable lim = new PageRequest(p, l, new Sort(new Sort.Order[] { new Sort.Order(Sort.Direction.ASC, "name") }));
+	    	movies = movieRepository.findByNameContainingIgnoreCase(name.replaceAll(" ", "%"), lim);
+	    	totalResults = Arrays.asList(new Integer[movieRepository.countByNameContainingIgnoreCase(name.replaceAll(" ", "%")).intValue()]);
+	    }else{
+	    	p=p*l;
+	    	movies = movieRepository.findByTagIn(name.replaceAll(" ", "\\|"),p,l);
+	    	totalResults = movieRepository.countByTagIn(name.replaceAll(" ", "\\|"));
+	    }
 		int tot = (totalResults==null) ? 0 : totalResults.size();
 		return new MoviesResponse(movies.size(), tot, movies, l);
 	}
