@@ -64,6 +64,17 @@ public class MovieService {
 	private Integer toMegas;
 	
 
+	private String removeInvalidCharacters(String str){
+		return str.replaceAll("-", " ").replaceAll("_", " ").replaceAll("\\+", " ").replaceAll("\\|", " ").replaceAll("\\\\", " ").
+		replaceAll("\\*", " ").replaceAll("\\.", " ").replaceAll("\\(", " ").replaceAll("\\)", " ").replaceAll("\\[", " ").
+		replaceAll("\\]", " ").replaceAll("\\s+"," ").trim();
+	}
+	
+	private boolean isVideo(String ext){
+		return ((ext.equals("mp4")) || (ext.equals("mov")) || (ext.equals("avi")) || (ext.equals("wmv")) || 
+	              (ext.equals("mkv")) || (ext.equals("flv")));
+	}
+	
 	public MoviesResponse addAllMoviesFromFolder() {
 	    List<String> mov = new ArrayList<String>();
 	    List<Tag> tags = null;
@@ -90,8 +101,7 @@ public class MovieService {
 	          m = s.trim().split(" ", 2);
 	          if (m.length == 2) {
 	            ext = m[1].substring(m[1].lastIndexOf(".") + 1).toLowerCase();
-	            if ((ext.equals("mp4")) || (ext.equals("mov")) || (ext.equals("avi")) || (ext.equals("wmv")) || 
-	              (ext.equals("mkv")) || (ext.equals("flv"))) {
+	            if (isVideo(ext)) {
 	              cont++;
 	              mov.add(m[1]);
 	              List<Movie> mv = movieRepository.findByName(m[1]);
@@ -105,9 +115,7 @@ public class MovieService {
 	              }
 	              if (searching){
 	                ret.add(new Movie(duration, m[1], saveDirectory, size));
-	                String[] tagsFormatted = m[1].substring(0, m[1].lastIndexOf(".")).replaceAll("-", " ").replaceAll("_", " ").
-	                		replaceAll("\\.", " ").replaceAll("\\(", " ").replaceAll("\\)", " ").replaceAll("\\[", " ").
-	                		replaceAll("\\]", " ").split(" ");
+	                String[] tagsFormatted = removeInvalidCharacters(m[1].substring(0, m[1].lastIndexOf("."))).split(" ");
 	                for(int i=0;i<tagsFormatted.length;i++){
 	                	tags = new ArrayList<Tag>();
 	                	Tag t = tagsRepository.findByTag(tagsFormatted[i]);
@@ -312,8 +320,8 @@ public class MovieService {
 	    	totalResults = Arrays.asList(new Integer[movieRepository.countByNameContainingIgnoreCase(name.replaceAll(" ", "%")).intValue()]);
 	    }else{
 	    	p=p*l;
-	    	movies = movieRepository.findByTagIn(name.trim().replaceAll("\\s+"," ").replaceAll(" ", "\\|"),p,l);
-	    	totalResults = movieRepository.countByTagIn(name.trim().replaceAll("\\s+"," ").replaceAll(" ", "\\|"));
+	    	movies = movieRepository.findByTagIn(removeInvalidCharacters(name).replaceAll(" ", "\\|"),p,l);
+	    	totalResults = movieRepository.countByTagIn(removeInvalidCharacters(name).replaceAll(" ", "\\|"));
 	    }
 		int tot = (totalResults==null) ? 0 : totalResults.size();
 		return new MoviesResponse(movies.size(), tot, movies, l);
