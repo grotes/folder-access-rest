@@ -312,8 +312,8 @@ public class MovieService {
 	    	totalResults = Arrays.asList(new Integer[movieRepository.countByNameContainingIgnoreCase(name.replaceAll(" ", "%")).intValue()]);
 	    }else{
 	    	p=p*l;
-	    	movies = movieRepository.findByTagIn(name.replaceAll(" ", "\\|"),p,l);
-	    	totalResults = movieRepository.countByTagIn(name.replaceAll(" ", "\\|"));
+	    	movies = movieRepository.findByTagIn(name.trim().replaceAll("\\s+"," ").replaceAll(" ", "\\|"),p,l);
+	    	totalResults = movieRepository.countByTagIn(name.trim().replaceAll("\\s+"," ").replaceAll(" ", "\\|"));
 	    }
 		int tot = (totalResults==null) ? 0 : totalResults.size();
 		return new MoviesResponse(movies.size(), tot, movies, l);
