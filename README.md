@@ -2,6 +2,8 @@
 Find movie files in folder and stores in database, uses ffmpeg or avconv
 
 
+#Branches guide:
+
 #SQL to create table and user
 
 use datos;
