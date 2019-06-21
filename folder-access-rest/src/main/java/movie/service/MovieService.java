@@ -89,43 +89,74 @@ public class MovieService {
 	        new InputStreamReader(p.getInputStream()));
 	      
 	      Thread.sleep(commandLsWait.longValue());
-
-	      String s = null;
+	      
+	      String restOfPath="",duration="",ext="";
+	      String s=null, size=null;
 	      String[] m = null;
-	      String size = null;
-	      String duration = "";
-	      boolean searching = true;
-	      String ext = "";
+	      boolean searching=true,moreThanOne=true;
+	      int position = 1;
+	      
 	      if (stdInput.ready()) {
 	        while ((s = stdInput.readLine()) != null) {
+	        	//System.out.println(s);
 	          m = s.trim().split(" ", 2);
-	          if (m.length == 2) {
-	            ext = m[1].substring(m[1].lastIndexOf(".") + 1).toLowerCase();
-	            if (isVideo(ext)) {
-	              cont++;
-	              mov.add(m[1]);
-	              List<Movie> mv = movieRepository.findByName(m[1]);
-	              if (mv.size() > 0) {
-	                String nameInDDBB = ((Movie)mv.get(0)).getName().trim();
-	                if (nameInDDBB.equals(m[1])){
-	                  searching = false;
-	                }
-	              } else {
-	                size = String.valueOf(Long.parseLong(m[0]) / toMegas).concat("MB");
-	              }
-	              if (searching){
-	                ret.add(new Movie(duration, m[1], saveDirectory, size));
-	                String[] tagsFormatted = removeInvalidCharacters(m[1].substring(0, m[1].lastIndexOf("."))).split(" ");
-	                for(int i=0;i<tagsFormatted.length;i++){
-	                	tags = new ArrayList<Tag>();
-	                	Tag t = tagsRepository.findByTag(tagsFormatted[i]);
-	                	if(t==null){t=new Tag(tagsFormatted[i]);}
-                		tags.add(t);
-                		tags = (List<Tag>) tagsRepository.save(tags);
-                		relTags.add(new RelTag(tags.get(tags.size()-1).getCod(),ret.size()-1));
-	                }
-	              }
-	            }
+	          position = 1;
+	          moreThanOne=true;
+	          if (m.length >= 2) {
+	        	  while(moreThanOne){
+	        		  //System.out.println("m::::::"+m[position]);
+		            ext = m[position].trim().substring(m[position].lastIndexOf(".") + 1).toLowerCase();
+		            //if it's a video file is processed as such
+		            if (isVideo(ext)) {
+		              cont++;
+		              mov.add(m[position]);
+		              //Check if the movie already exists in BBDD
+		              List<Movie> mv = movieRepository.findByName(m[position]);
+		              if (mv.size() > 0) {
+		                String nameInDDBB = ((Movie)mv.get(0)).getName().trim();
+		                if (nameInDDBB.equals(m[position])){
+		                	//If it's found it doesn't save again
+		                  searching = false;
+		                }
+		              } else {//Save the filesize in megas
+		                size = String.valueOf(Long.parseLong(m[position-1].trim()) / toMegas).concat("MB");
+		              }
+		              if (searching){
+		                ret.add(new Movie(duration, m[position], saveDirectory.concat(restOfPath), size));
+		                //System.out.println("RUTA::::::"+saveDirectory.concat(restOfPath)+m[position]);
+		                String[] tagsFormatted = removeInvalidCharacters(m[position].substring(0, m[position].lastIndexOf("."))).split(" ");
+		                for(int i=0;i<tagsFormatted.length;i++){
+		                	tags = new ArrayList<Tag>();
+		                	Tag t = tagsRepository.findByTag(tagsFormatted[i]);
+		                	if(t==null){t=new Tag(tagsFormatted[i]);}
+	                		tags.add(t);
+	                		tags = (List<Tag>) tagsRepository.save(tags);
+	                		relTags.add(new RelTag(tags.get(tags.size()-1).getCod(),ret.size()-1));
+		                }
+		              }
+		            //If not a video, check if it is the path of an internal folder  
+		            }else{
+		            	if(s.trim().indexOf(directory)!=-1){
+		            		restOfPath = s.trim().substring(0, s.trim().length()-1).replace(directory, "").concat("/");
+		            	}
+		            	//System.out.println("ELSE 1:::::"+restOfPath);
+		            }
+		            
+		            if(position>1){
+		            	moreThanOne=false;
+		            }
+		            if(m.length <3){
+	        			moreThanOne=false;
+	        		}else{
+	        			position+=2;
+	        		}
+	        	  }
+	          //If it have less than two pieces, check if it is the path of an internal folder 
+	          }else{
+	        	  if(s.trim().indexOf(directory)!=-1){
+	        		  restOfPath = s.trim().substring(0, s.trim().length()-1).replace(directory, "").concat("/");
+	        	  }
+	        	  //System.out.println("ELSE 2:::"+restOfPath);
 	          }
 	          searching = true;
 	        }
@@ -209,7 +240,7 @@ public class MovieService {
 	        //Capture second 40
 	        long start = System.currentTimeMillis();
 	        System.out.println("Comienzo: "+Calendar.getInstance().getTime());
-	        CompletableFuture<String> duration1 = command.executeCommandThumb(mov.getName(), mins, tmpImg, true);
+	        CompletableFuture<String> duration1 = command.executeCommandThumb(mov.getDirectory().concat(mov.getName()), mins, tmpImg, true);
 	        String[] d = duration1.get().split(":");
 	        //get minutes, if longer than 1h get 60 minutes
 	        if(d.length==2){
@@ -222,17 +253,17 @@ public class MovieService {
 	        min=inc.intValue();
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("1.png");
-	        CompletableFuture<String> duration2 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration2 = command.executeCommandThumb(mov.getDirectory().concat(mov.getName()), mins, tmpImg, false);
 	        //Capture minute 2/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("2.png");
-	        CompletableFuture<String> duration3 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration3 = command.executeCommandThumb(mov.getDirectory().concat(mov.getName()), mins, tmpImg, false);
 	        //Capture minute 3/4 of minutes
 	        min=min+inc;
 	        mins=(min.toString().length()==1) ? "0".concat(min.toString()) : min.toString();
 	        tmpImg = tmpRutaImg.concat("3.png");
-	        CompletableFuture<String> duration4 = command.executeCommandThumb(mov.getName(), mins, tmpImg, false);
+	        CompletableFuture<String> duration4 = command.executeCommandThumb(mov.getDirectory().concat(mov.getName()), mins, tmpImg, false);
 	        
 	        //Wait until they are all done
 	        CompletableFuture.allOf(duration1,duration2,duration3,duration4).join();
@@ -251,6 +282,8 @@ public class MovieService {
 	
 	public MoviesResponse calculateDurationAndThumb()
 	  {
+		//TODO
+		//Cambiar findAll por busqueda de las que no tengan duracion
 	    List<Movie> mov = (List<Movie>)movieRepository.findAll();
 	    int cont = 0;
 	    for (int i = 0; (i < mov.size()) && (cont < maxIterationsThumb); i++) {

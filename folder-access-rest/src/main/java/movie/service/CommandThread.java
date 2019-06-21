@@ -23,6 +23,8 @@ public class CommandThread {
 	private String commandThird;
 	@Value("${directory}")
 	private String directory;
+	@Value("${savedirectory}")
+	private String savedirectory;
 	
 	private static final Logger logger = LoggerFactory.getLogger(MovieService.class);
 	
@@ -32,8 +34,8 @@ public class CommandThread {
 	public CompletableFuture<String> executeCommandThumb(String movName, String min, String tmpImg, boolean returnDuration) {
 		  String duration = null;
 		  try{
-		  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,min,directory.concat(movName)).concat(String.format(commandThird,tmpImg)) };
-		  logger.info("\nCOMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,min,directory.concat(movName)).concat(String.format(commandThird,tmpImg)) + "\n");
+		  String[] cmd = new String[]{ commandFirst, commandFirst2, String.format(commandSecond,min,movName.replace(savedirectory, directory)).concat(String.format(commandThird,tmpImg)) };
+		  logger.info("\nCOMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandSecond,min,movName.replace(savedirectory, directory)).concat(String.format(commandThird,tmpImg)) + "\n");
 	      Process p = Runtime.getRuntime().exec(cmd);
 
 	      BufferedReader stdError = new BufferedReader(
