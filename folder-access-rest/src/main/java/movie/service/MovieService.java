@@ -282,9 +282,7 @@ public class MovieService {
 	
 	public MoviesResponse calculateDurationAndThumb()
 	  {
-		//TODO
-		//Cambiar findAll por busqueda de las que no tengan duracion
-	    List<Movie> mov = (List<Movie>)movieRepository.findAll();
+	    List<Movie> mov = (List<Movie>)movieRepository.findAllNotThumbOrDuration();
 	    int cont = 0;
 	    for (int i = 0; (i < mov.size()) && (cont < maxIterationsThumb); i++) {
 	      Movie m = (Movie)mov.get(i);

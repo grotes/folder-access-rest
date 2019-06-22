@@ -40,6 +40,9 @@ public abstract interface MovieRepository extends CrudRepository<Movie, Integer>
   
 	@Query("select new movie.beans.Movie(m.id, m.duration, m.name, m.directory, m.size, m.thumb) from Movie m order by m.name")
 	public abstract List<Movie> findMoviesForListing();
+	
+	@Query("select new movie.beans.Movie(m.id, m.duration, m.name, m.directory, m.size, m.thumb) from Movie m where m.duration='' or m.thumb=null order by m.fecha desc")
+	public abstract List<Movie> findAllNotThumbOrDuration();
   
 	@Transactional
 	@Modifying
