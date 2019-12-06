@@ -72,7 +72,7 @@ public class MovieService {
 	
 	private boolean isVideo(String ext){
 		return ((ext.equals("mp4")) || (ext.equals("mov")) || (ext.equals("avi")) || (ext.equals("wmv")) || 
-	              (ext.equals("mkv")) || (ext.equals("flv")));
+	              (ext.equals("mkv")) || (ext.equals("flv")) || (ext.equals("m4v")));
 	}
 	
 	public MoviesResponse addAllMoviesFromFolder() {
@@ -85,6 +85,9 @@ public class MovieService {
 	      String[] cmd = { commandFirst, commandFirst2, String.format(commandls,directory) };
 	      System.out.println("COMMAND:" + commandFirst + " " + commandFirst2 + " " + String.format(commandls,directory));
 	      Process p = Runtime.getRuntime().exec(cmd);
+	      //int ex = p.waitFor();
+	      //System.out.println("Exit code: "+ex+"\n");
+	      
 	      BufferedReader stdInput = new BufferedReader(
 	        new InputStreamReader(p.getInputStream()));
 	      
@@ -112,6 +115,7 @@ public class MovieService {
 		              mov.add(m[position]);
 		              //Check if the movie already exists in BBDD
 		              List<Movie> mv = movieRepository.findByName(m[position]);
+		              
 		              if (mv.size() > 0) {
 		                String nameInDDBB = ((Movie)mv.get(0)).getName().trim();
 		                if (nameInDDBB.equals(m[position])){
@@ -124,7 +128,8 @@ public class MovieService {
 		              if (searching){
 		                ret.add(new Movie(duration, m[position], saveDirectory.concat(restOfPath), size));
 		                //System.out.println("RUTA::::::"+saveDirectory.concat(restOfPath)+m[position]);
-		                String[] tagsFormatted = removeInvalidCharacters(m[position].substring(0, m[position].lastIndexOf("."))).split(" ");
+		                //Tags taken from the name and path
+		                String[] tagsFormatted = removeInvalidCharacters(m[position].substring(0, m[position].lastIndexOf(".")).concat(" ".concat(restOfPath))).split(" ");
 		                for(int i=0;i<tagsFormatted.length;i++){
 		                	tags = new ArrayList<Tag>();
 		                	Tag t = tagsRepository.findByTag(tagsFormatted[i]);
