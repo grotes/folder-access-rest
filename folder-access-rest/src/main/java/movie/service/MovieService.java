@@ -71,7 +71,6 @@ public class MovieService {
 	}
 	
 	private boolean isVideo(String ext){
-		
 		return ((ext.equals("mp4")) || (ext.equals("mov")) || (ext.equals("avi")) || (ext.equals("wmv")) || 
 	              (ext.equals("mkv")) || (ext.equals("flv")) || (ext.equals("m4v")));
 	}
